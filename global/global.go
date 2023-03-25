@@ -1,20 +1,20 @@
 package global
 
-import "github.com/spf13/viper"
-
 var (
-	OpenAIKey   string
-	Config      System
-	ViperConfig *viper.Viper
+	OpenAIKey string
+	Config    SystemConfig
 )
 
-type System struct {
-	OpenAIKey      string
-	Address        string
-	AuthSecretKey  string
-	HttpsProxy     string
-	ReverseProxy   string
-	SocksHost      string
-	SocksPort      string
-	OpenAPIBaseURL string
+type SystemConfig struct {
+	System struct {
+		OpenAIKey      string
+		Address        string
+		AuthSecretKey  string
+		HttpsProxy     string
+		ReverseProxy   string
+		SocksHost      string
+		SocksPort      string
+		OpenAPIBaseURL string
+		DatabasePath   string
+	}
 }

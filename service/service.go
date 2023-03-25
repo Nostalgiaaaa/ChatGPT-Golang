@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 )
 
 func ChatConfig() (model.ChatConfig, error) {
@@ -15,20 +14,20 @@ func ChatConfig() (model.ChatConfig, error) {
 		balance = "error"
 	}
 
-	reverseProxy := os.Getenv("API_REVERSE_PROXY")
+	reverseProxy := global.Config.System.ReverseProxy
 	if reverseProxy == "" {
 		reverseProxy = "-"
 	}
 
-	httpsProxy := os.Getenv("HTTPS_PROXY")
+	httpsProxy := global.Config.System.HttpsProxy
 
 	if httpsProxy == "" {
 		httpsProxy = "-"
 	}
 
 	socksProxy := "-"
-	socksHost := os.Getenv("SOCKS_PROXY_HOST")
-	socksPort := os.Getenv("SOCKS_PROXY_PORT")
+	socksHost := global.Config.System.SocksHost
+	socksPort := global.Config.System.SocksPort
 	if socksHost != "" && socksPort != "" {
 		socksProxy = fmt.Sprintf("%s:%s", socksHost, socksPort)
 	}
@@ -50,9 +49,9 @@ func ChatConfig() (model.ChatConfig, error) {
 }
 
 func fetchBalance() (string, error) {
-	openAPIBaseURL := os.Getenv("OPENAI_API_BASE_URL")
+	openAPIBaseURL := global.Config.System.OpenAPIBaseURL
 
-	if global.OpenAIKey == "" {
+	if global.Config.System.OpenAIKey == "" {
 		return "-", nil
 	}
 
@@ -68,7 +67,7 @@ func fetchBalance() (string, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+global.OpenAIKey)
+	req.Header.Set("Authorization", "Bearer "+global.Config.System.OpenAIKey)
 
 	resp, err := client.Do(req)
 	if err != nil {

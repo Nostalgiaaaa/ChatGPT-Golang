@@ -1,5 +1,5 @@
-*.sqlite
-*.yaml
+database.sqlite
+config.yaml
 
 
 

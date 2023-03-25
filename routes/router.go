@@ -1,21 +1,18 @@
 package routes
 
 import (
-	"chatgpt-go/chatgpt"
 	"chatgpt-go/global"
 	"chatgpt-go/model"
 	"chatgpt-go/service"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
-
-	"github.com/gin-gonic/gin"
 )
 
 func Verify(c *gin.Context) {
@@ -31,7 +28,7 @@ func Verify(c *gin.Context) {
 		return
 	}
 
-	if os.Getenv("AUTH_SECRET_KEY") != req.Token {
+	if global.Config.System.AuthSecretKey != req.Token {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
@@ -53,7 +50,7 @@ func Session(c *gin.Context) {
 
 	c.Request.Header.Set("Authorization", "Bearer "+global.OpenAIKey)
 
-	authSecretKey := os.Getenv("AUTH_SECRET_KEY")
+	authSecretKey := global.Config.System.AuthSecretKey
 	hasAuth := authSecretKey != ""
 
 	response := struct {
@@ -88,7 +85,7 @@ func GetConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func ChatProcess(chatStorage *chatgpt.ChatStorage) gin.HandlerFunc {
+func ChatProcess(chatStorage *ChatStorage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 设置响应头的 Content-Type 为 application/octet-stream
 		c.Header("Content-Type", "application/octet-stream")
@@ -108,14 +105,14 @@ func ChatProcess(chatStorage *chatgpt.ChatStorage) gin.HandlerFunc {
 			return
 		}
 
-		if global.OpenAIKey == "" {
+		if global.Config.System.OpenAIKey == "" {
 			panic(errors.New("Missing OPENAI_API_KEY environment variable"))
 		}
 
-		config := openai.DefaultConfig(global.OpenAIKey)
-		socksHost := os.Getenv("SOCKS_PROXY_HOST")
-		socksPort := os.Getenv("SOCKS_PROXY_PORT")
-		httpsProxy := os.Getenv("HTTPS_PROXY")
+		config := openai.DefaultConfig(global.Config.System.OpenAIKey)
+		socksHost := global.Config.System.SocksHost
+		socksPort := global.Config.System.SocksPort
+		httpsProxy := global.Config.System.HttpsProxy
 
 		if socksHost != "" && socksPort != "" {
 			proxyUrl, err := url.Parse("socks5://" + socksHost + ":" + socksPort)

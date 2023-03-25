@@ -1,15 +1,15 @@
-package chatgpt
+package routes
 
 import (
+	"chatgpt-go/global"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/sashabaranov/go-openai"
 	"log"
+	_ "modernc.org/sqlite"
 	"os"
 	"path/filepath"
-
-	openai "github.com/sashabaranov/go-openai"
-	_ "modernc.org/sqlite"
 )
 
 type Chat struct {
@@ -24,7 +24,7 @@ type ChatStorage struct {
 
 func NewChatStorage() (*ChatStorage, error) {
 
-	dbpath := os.Getenv("DATABASE_PATH")
+	dbpath := global.Config.System.DatabasePath
 	if dbpath == "" {
 		cwd, _ := os.Getwd()
 		dbpath = filepath.Join(cwd, "database.sqlite")
@@ -49,6 +49,7 @@ func NewChatStorage() (*ChatStorage, error) {
 	}
 	return &ChatStorage{db: db}, nil
 }
+
 func (c *ChatStorage) GetMessages(parentMessageId string) ([]openai.ChatCompletionMessage, error) {
 	var messagesStr string
 

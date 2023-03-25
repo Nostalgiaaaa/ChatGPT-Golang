@@ -10,7 +10,7 @@ import (
 func Viper() *viper.Viper {
 
 	v := viper.New()
-	v.SetConfigFile("./config.yaml")
+	v.SetConfigFile("config.yaml")
 
 	err := v.ReadInConfig()
 	if err != nil {

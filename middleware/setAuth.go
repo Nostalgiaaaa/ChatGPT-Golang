@@ -2,12 +2,9 @@ package middleware
 
 import (
 	"chatgpt-go/global"
-	"encoding/json"
-	"net/http"
-	"os"
-	"strings"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
 )
 
 func SetAuthorizationHeader() gin.HandlerFunc {
@@ -18,11 +15,15 @@ func SetAuthorizationHeader() gin.HandlerFunc {
 	}
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authSecretKey := os.Getenv("AUTH_SECRET_KEY")
-		if authSecretKey != "" {
-			authorization := r.Header.Get("Authorization")
+func isNotEmptyString(s string) bool {
+	return len(strings.TrimSpace(s)) > 0
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authSecretKey := global.Config.System.AuthSecretKey
+		if isNotEmptyString(authSecretKey) {
+			authorization := c.GetHeader("Authorization")
 			if authorization == "" || strings.TrimSpace(strings.TrimPrefix(authorization, "Bearer ")) != strings.TrimSpace(authSecretKey) {
 				response := struct {
 					Status  string      `json:"status"`
@@ -33,12 +34,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 					Message: "Error: 无访问权限 | No access rights",
 					Data:    nil,
 				}
-				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode(response)
+				c.JSON(http.StatusUnauthorized, response)
+				c.Abort()
 				return
 			}
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }
