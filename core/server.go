@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func RunWServer() {
+func RunServer() {
 
 	router := initialize.Routers()
 

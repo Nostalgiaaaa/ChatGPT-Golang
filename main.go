@@ -8,6 +8,6 @@ func main() {
 
 	core.Viper()
 
-	core.RunWServer()
+	core.RunServer()
 
 }
