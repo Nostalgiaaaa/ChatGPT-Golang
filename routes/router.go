@@ -15,64 +15,48 @@ import (
 	"net/url"
 )
 
-func Verify(c *gin.Context) {
+func VerifyEndpoint(c *gin.Context) {
 	var req model.VerifyRequest
-	err := c.BindJSON(&req)
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	if err := c.BindJSON(&req); err != nil || !isValidToken(req.Token) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  "Error",
+			"message": err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 
-	if req.Token == "" {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "Success",
+		"message": "Verify successfully",
+		"data":    nil,
+	})
+}
 
-	if global.Config.System.AuthSecretKey != req.Token {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+func isValidToken(token string) bool {
+	return token != "" && global.Config.System.AuthSecretKey == token
+}
 
-	response := struct {
-		Status  string      `json:"status"`
-		Message string      `json:"message"`
-		Data    interface{} `json:"data"`
-	}{
-		Status:  "Success",
-		Message: "Verify successfully",
-		Data:    nil,
-	}
+func SessionEndpoint(c *gin.Context) {
+	authorizationHeader := "Bearer " + global.OpenAIKey
+	c.Request.Header.Set("Authorization", authorizationHeader)
 
+	authSecretKey := global.Config.System.AuthSecretKey
+	isAuthenticated := authSecretKey != ""
+
+	response := createResponse(isAuthenticated)
 	c.JSON(http.StatusOK, response)
 }
 
-func Session(c *gin.Context) {
-
-	c.Request.Header.Set("Authorization", "Bearer "+global.OpenAIKey)
-
-	authSecretKey := global.Config.System.AuthSecretKey
-	hasAuth := authSecretKey != ""
-
-	response := struct {
-		Status  string `json:"status"`
-		Message string `json:"message"`
-		Data    struct {
-			Auth  bool   `json:"auth"`
-			Model string `json:"model"`
-		} `json:"data"`
-	}{
-		Status:  "Success",
-		Message: "",
-		Data: struct {
-			Auth  bool   `json:"auth"`
-			Model string `json:"model"`
-		}{
-			Auth:  hasAuth,
-			Model: "ChatGPTAPI",
+func createResponse(isAuthenticated bool) gin.H {
+	return gin.H{
+		"status":  "Success",
+		"message": "",
+		"data": gin.H{
+			"auth":  isAuthenticated,
+			"model": "ChatGPTAPI",
 		},
 	}
-
-	c.JSON(http.StatusOK, response)
 }
 
 func GetConfig(c *gin.Context) {

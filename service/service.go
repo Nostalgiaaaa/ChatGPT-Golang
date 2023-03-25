@@ -84,7 +84,5 @@ func fetchBalance() (string, error) {
 		return "-", err
 	}
 
-	fmt.Println(data)
-
 	return fmt.Sprintf("%.3f", data.TotalAvailable), nil
 }

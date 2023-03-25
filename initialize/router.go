@@ -26,10 +26,13 @@ func Routers() *gin.Engine {
 	corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "Authorization") // 确保允许"Authorization"请求头
 	r.Use(cors.New(corsConfig))
 
-	r.POST("/api/chat-process", routes.ChatProcess(chatData))
-	r.POST("/api/config", routes.GetConfig)
-	r.POST("/api/session", routes.Session)
-	r.POST("/api/verify", routes.Verify)
+	api := r.Group("api")
+	{
+		api.POST("/chat-process", routes.ChatProcess(chatData))
+		api.POST("/config", routes.GetConfig)
+		api.POST("/session", routes.SessionEndpoint)
+		api.POST("/verify", routes.VerifyEndpoint)
+	}
 
 	r.StaticFS("/", http.FS(html.Static))
 
