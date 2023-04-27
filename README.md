@@ -1,4 +1,4 @@
-### chatgpt-web  Golang后端*丢人版
+### chatgpt-web  Golang后端
 
 -  俩小时草草加工出来的 直接改了下博客的框架加上了openai的api
 
